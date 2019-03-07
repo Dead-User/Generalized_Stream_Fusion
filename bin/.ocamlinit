@@ -1,0 +1,3 @@
+#load "stream.cmo";;
+#load "test.cmo";;
+open Test;;
