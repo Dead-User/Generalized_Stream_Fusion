@@ -3,6 +3,7 @@ module ListFunctor = struct
   type ('a, 'b) t =
     | Nil
     | Cons of ('a * 'b)
+    (* for the sake of filter *)
     | Skip of 'b
 
   let map f = function
@@ -24,6 +25,7 @@ module List = struct
   open ListFunctor
   type ('a, 'b) t = ('a, 'b) Stream.stream
 
+  (* give a more friendly interface, and hide ListFunctor.t *)
   let fold : ('a code -> 'b code -> 'b code)
           -> 'b code
           -> ('a, 's) t
@@ -59,6 +61,8 @@ module List = struct
         match x with
         | Nil -> k Nil
         | Cons(a, b) ->
+            (* here using CPS is necessary to eliminate
+             * intermediate data structures *)
             .<if .~(predicate a) then
                 .~(k @@ Skip b)
               else
@@ -84,10 +88,12 @@ module List = struct
     in
     Stream.{start; step}
 
+  (* an example of a more concrete function,
+   * generates a list from 1 to n *)
   let iota : int code -> (int, int) t = fun n ->
     unfold (fun x -> .<.~x = .~n>.)
            (fun x -> .<.~x, .~x + 1>.)
-           n
+           .<1>. 
 
   let zip : ('a, 's1) t
          -> ('b, 's2) t

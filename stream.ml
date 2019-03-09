@@ -14,6 +14,7 @@ module type Zipper = sig
 end;;
 
 module MakeStream(X : Functor) = struct
+  (* for the sake of polymorphic function as argument *)
   type ('a, 's) streamFunc =
     { call : 'b. (('a code, 's code) X.t -> 'b code) -> 'b code }
 
@@ -25,6 +26,7 @@ module MakeStream(X : Functor) = struct
           -> ('a, 's) stream
           -> 'b code
   = fun folder {start; step} ->
+    (* avoid duplicate evaluation if [start] is an expression *)
     .<let start = .~start in
       let rec iterate state =
         .~((step .<state>.).call @@ fun v ->
